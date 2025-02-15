@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startpage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JetBrainsMono/2.304/web/woff2/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <style>
+        @font-face {
+            font-family: 'JetBrains Mono';
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/JetBrainsMono/2.304/web/woff2/JetBrainsMono-Regular.woff2') format('woff2');
+        }
+
+        :root {
+            --bg-rgb: 245, 240, 230;
+            --bg-alt-rgb: 235, 230, 220;
+            --fg-rgb: 50, 45, 40;
+            --fg-alt-rgb: 80, 75, 70;
+            --primary-rgb: 120, 90, 60;
+            --secondary-rgb: 150, 100, 70;
+            --tertiary-rgb: 130, 110, 80;
+            --note-yellow: #ffd700;
+            --note-blue: #87CEEB;
+            --note-pink: #FFB6C1;
+            --note-green: #98FB98;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background-color: rgb(var(--bg-rgb));
+            color: rgb(var(--fg-rgb));
+            min-height: 100vh;
+            padding: 2rem;
+            background-image: 
+                linear-gradient(90deg, rgba(50, 45, 40, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(50, 45, 40, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .clock {
+            text-align: center;
+            color: rgb(var(--primary-rgb));
+        }
+
+        .clock-time {
+            font-size: 4.5rem;
+            font-weight: 500;
+            letter-spacing: 4px;
+            text-shadow: 2px 2px 0px rgba(var(--primary-rgb), 0.1);
+        }
+
+        .clock-date {
+            font-size: 1.1rem;
+            margin-top: 0.3em;
+            color: rgb(var(--fg-alt-rgb));
+        }
+
+        .gif-container {
+            width: 500px;
+            height: 280px;
+            background: rgb(var(--bg-alt-rgb));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            width: 500px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8em 1.2em;
+            font-size: 1rem;
+            color: rgb(var(--fg-rgb));
+            background: rgb(var(--bg-alt-rgb));
+            border: 1px solid rgba(var(--fg-rgb), 0.1);
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-folders {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    transition: margin-top 0.3s ease;
+}
+
+.link-folders.search-active {
+    margin-top: 60px; /* More space when search is active */
+}
+
+.search-shortcuts {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgb(var(--bg-alt-rgb));
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: none;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(var(--fg-rgb), 0.1);
+    z-index: 1000; /* Ensure it's above other elements */
+}
+        .folder {
+            background: rgb(var(--bg-alt-rgb));
+            padding: 1.5rem;
+            border-radius: 8px;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .folder h2 {
+            color: rgb(var(--primary-rgb));
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid rgba(var(--primary-rgb), 0.2);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .folder a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgb(var(--fg-rgb));
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.3rem 0;
+            transition: all 0.2s ease;
+        }
+
+        .folder a:hover {
+            background: rgba(var(--primary-rgb), 0.1);
+            color: rgb(var(--primary-rgb));
+            transform: translateX(5px);
+        }
+
+/* Remove the old .notes-grid styling */
+/* Add these new styles */
+
+.notes-section {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+    pointer-events: none; /* Allows clicking through the container */
+}
+
+.notes-container, .todos-container {
+    width: 300px;
+    background: rgba(var(--bg-alt-rgb), 0.9);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    pointer-events: auto; /* Enables interaction with these containers */
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-container h2, .todos-container h2 {
+    color: rgb(var(--primary-rgb));
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notes-grid, .todos-grid {
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-right: 0.5rem;
+}
+
+.note-input, .todo-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+}
+
+.sticky-note {
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sticky-note:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sticky-note.note {
+    background: linear-gradient(135deg, #FFE8B6, #FDE49E);
+}
+
+/* Update the todo-specific styles */
+.sticky-note.todo {
+    background: linear-gradient(to bottom, #ffdd94, #ffb347);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+    min-height: 60px; /* Reduced from 80px */
+}
+
+/* Add new styles for todo checkbox */
+.sticky-note.todo input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(var(--primary-rgb), 0.5);
+    border-radius: 4px;
+    margin-top: 2px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sticky-note.todo input[type="checkbox"]:checked {
+    background-color: rgb(var(--primary-rgb));
+    border-color: rgb(var(--primary-rgb));
+}
+
+.sticky-note.todo input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    left: 3px;
+    top: -1px;
+}
+
+.sticky-note.todo span {
+    flex: 1;
+    margin-top: 2px;
+}
+
+/* Update the todo container specific styles */
+.todos-container {
+    border-left: none;
+    background: rgba(var(--bg-alt-rgb), 0.95);
+}
+
+.sticky-note.todo .delete-note {
+    padding: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0.5rem;
+}
+
+/* Add nice transition for completed todos */
+.sticky-note.todo span {
+    transition: text-decoration 0.3s ease, opacity 0.3s ease;
+}
+
+.sticky-note.todo input[type="checkbox"]:checked + span {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.sticky-note .delete-note {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sticky-note:hover .delete-note {
+    opacity: 1;
+}
+
+.sticky-note span {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.todo-item input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+/* Custom scrollbar for the note containers */
+.notes-grid::-webkit-scrollbar,
+.todos-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notes-grid::-webkit-scrollbar-track,
+.todos-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.notes-grid::-webkit-scrollbar-thumb,
+.todos-grid::-webkit-scrollbar-thumb {
+    background: rgba(var(--primary-rgb), 0.2);
+    border-radius: 3px;
+}
+
+.notes-grid::-webkit-scrollbar-thumb:hover,
+.todos-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--primary-rgb), 0.3);
+}
+
+        .sticky-note {
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.2s ease;
+            cursor: move;
+        }
+
+        .sticky-note:hover {
+            transform: translateY(-2px);
+        }
+
+        .sticky-note.note {
+            background-color: var(--note-yellow);
+        }
+
+        .sticky-note.todo {
+            background-color: var(--note-blue);
+        }
+
+        .note-input, .todo-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .folder-shortcuts {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 0.8rem;
+            color: rgba(var(--fg-rgb), 0.5);
+        }
+
+        .link-edit-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgb(var(--bg-rgb));
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .link-edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .link-edit-form input {
+            padding: 0.5rem;
+            border: 1px solid rgba(var(--fg-rgb), 0.2);
+            border-radius: 4px;
+        }
+
+        .link-edit-form button {
+            padding: 0.5rem 1rem;
+            background: rgb(var(--primary-rgb));
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(var(--bg-alt-rgb), 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: rgba(var(--fg-rgb), 0.7);
+        }
+        .search-container {
+    width: 500px;
+    position: relative;
+}
+
+.search-shortcuts {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgb(var(--bg-alt-rgb));
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: none;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(var(--fg-rgb), 0.1);
+}
+
+.search-input:focus + .search-shortcuts,
+.search-shortcuts:hover {
+    display: flex;
+}
+
+.shortcut-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background: rgba(var(--bg-rgb), 0.8);
+    color: rgb(var(--fg-rgb));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.shortcut-btn:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+    transform: translateY(-2px);
+}
+
+.shortcut-btn.youtube:hover {
+    color: #ff0000;
+}
+
+.shortcut-btn.reddit:hover {
+    color: #ff4500;
+}
+
+.shortcut-btn.github:hover {
+    color: #333;
+}
+
+.shortcut-btn i {
+    font-size: 1.1rem;
+}
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="clock">
+            <div class="clock-time">00:00</div>
+            <div class="clock-date">Monday, January 1</div>
+        </div>
+
+        <div class="gif-container">
+            <img src="/api/placeholder/500/280" alt="placeholder" />
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search..." />
+            <div class="search-shortcuts">
+                <button class="shortcut-btn youtube">
+                    <i class="fab fa-youtube"></i>
+                    YouTube
+                </button>
+                <button class="shortcut-btn reddit">
+                    <i class="fab fa-reddit"></i>
+                    Reddit
+                </button>
+                <button class="shortcut-btn github">
+                    <i class="fab fa-github"></i>
+                    GitHub
+                </button>
+            </div>
+        </div>
+
+        <div class="link-folders">
+            <div class="folder" data-folder="general">
+                <div class="folder-shortcuts">Ctrl+G</div>
+                <h2><i class="fas fa-globe"></i> General</h2>
+            </div>
+
+            <div class="folder" data-folder="social">
+                <div class="folder-shortcuts">Ctrl+S</div>
+                <h2><i class="fas fa-users"></i> Social</h2>
+            </div>
+
+            <div class="folder" data-folder="dev">
+                <div class="folder-shortcuts">Ctrl+D</div>
+                <h2><i class="fas fa-code"></i> Dev</h2>
+            </div>
+        </div>
+    </div>
+
+<!-- Remove the old notes-grid div -->
+<div class="notes-section">
+    <div class="notes-container">
+        <h2><i class="fas fa-sticky-note"></i> Notes</h2>
+        <input type="text" class="note-input" placeholder="Add a note... (Press Enter)">
+        <div class="notes-grid"></div>
+    </div>
+    
+    <div class="todos-container">
+        <h2><i class="fas fa-tasks"></i> Todos</h2>
+        <input type="text" class="todo-input" placeholder="Add a todo... (Press Enter)">
+        <div class="todos-grid"></div>
+    </div>
+</div>
+
+    <div class="link-edit-modal">
+        <form class="link-edit-form">
+            <input type="text" id="link-name" placeholder="Link Name" required>
+            <input type="url" id="link-url" placeholder="URL" required>
+            <input type="text" id="link-icon" placeholder="Icon Class (e.g., fas fa-link)" required>
+            <button type="submit">Add Link</button>
+        </form>
+    </div>
+    <!-- Add this after your other modals -->
+<div class="gif-edit-modal link-edit-modal">
+    <form class="gif-edit-form">
+        <h3>Add GIF URL</h3>
+        <input type="url" id="gif-url" placeholder="Enter GIF URL" required>
+        <button type="submit">Set GIF</button>
+    </form>
+</div>
+
+    <div class="modal-backdrop"></div>
+
+    <div class="keyboard-shortcuts">
+        Press Ctrl + G/S/D to add links to folders | Press Ctrl + N for new note | Press Ctrl + T for new todo
+    </div>
+
+
+
+
+    <script>
+        // Initial data structure for storing links
+const folderLinks = {
+    general: [
+        { name: 'Claude', url: 'https://claude.ai', icon: 'fas fa-robot' },
+        { name: 'YouTube', url: 'https://youtube.com', icon: 'fab fa-youtube' },
+        { name: 'Gmail', url: 'https://mail.google.com', icon: 'fas fa-envelope' }
+    ],
+    social: [
+        { name: 'X', url: 'https://x.com', icon: 'fab fa-x-twitter' },
+        { name: 'Reddit', url: 'https://reddit.com', icon: 'fab fa-reddit' },
+        { name: 'WhatsApp', url: 'https://web.whatsapp.com', icon: 'fab fa-whatsapp' }
+    ],
+    dev: [
+        { name: 'GitHub', url: 'https://github.com', icon: 'fab fa-github' },
+        { name: 'Arch Wiki', url: 'https://wiki.archlinux.org', icon: 'fas fa-terminal' },
+        { name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'fab fa-stack-overflow' }
+    ]
+};
+
+// DOM Elements
+const modal = document.querySelector('.link-edit-modal');
+const modalBackdrop = document.querySelector('.modal-backdrop');
+const linkEditForm = document.querySelector('.link-edit-form');
+// Update these DOM element queries at the start of your JS file
+const notesGrid = document.querySelector('.notes-grid');
+const todosGrid = document.querySelector('.todos-grid');
+const notesInput = document.querySelector('.note-input');
+const todoInput = document.querySelector('.todo-input');
+let currentFolder = null;
+const searchInput = document.querySelector('.search-input');
+const searchButtons = document.querySelectorAll('.shortcut-btn');
+const linkFolders = document.querySelector('.link-folders');
+const gifContainer = document.querySelector('.gif-container');
+const gifModal = document.querySelector('.gif-edit-modal');
+const gifForm = document.querySelector('.gif-edit-form');
+
+
+// Load saved data
+function loadSavedData() {
+    const savedLinks = localStorage.getItem('folderLinks');
+    if (savedLinks) {
+        Object.assign(folderLinks, JSON.parse(savedLinks));
+    }
+    
+    const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+    const savedTodos = JSON.parse(localStorage.getItem('todos')) || [];
+    
+    savedNotes.forEach(note => createStickyNote('note', note.text, note.id));
+    savedTodos.forEach(todo => createStickyNote('todo', todo.text, todo.id, todo.completed));
+    
+    renderAllFolders();
+}
+
+// Render functions
+function renderAllFolders() {
+    Object.keys(folderLinks).forEach(renderFolder);
+}
+
+function renderFolder(folderName) {
+    const folder = document.querySelector(`[data-folder="${folderName}"]`);
+    const links = folderLinks[folderName];
+    
+    // Clear existing links
+    const existingLinks = folder.querySelectorAll('a');
+    existingLinks.forEach(link => link.remove());
+    
+    // Add links
+    links.forEach(link => {
+        const linkElement = document.createElement('a');
+        linkElement.href = link.url;
+        linkElement.innerHTML = `<i class="${link.icon}"></i> ${link.name}`;
+        folder.appendChild(linkElement);
+    });
+}
+
+// Modal functions
+function showModal(folderName) {
+    currentFolder = folderName;
+    modal.style.display = 'block';
+    modalBackdrop.style.display = 'block';
+    document.getElementById('link-name').focus();
+}
+
+function hideModal() {
+    modal.style.display = 'none';
+    modalBackdrop.style.display = 'none';
+    linkEditForm.reset();
+    currentFolder = null;
+}
+
+// Sticky note functions
+function createStickyNote(type, text, id = Date.now(), completed = false) {
+    const note = document.createElement('div');
+    note.className = `sticky-note ${type}`;
+    note.dataset.id = id;
+    
+    if (type === 'todo') {
+        note.innerHTML = `
+            <input type="checkbox" ${completed ? 'checked' : ''}>
+            <span ${completed ? 'style="text-decoration: line-through"' : ''}>${text}</span>
+            <button class="delete-note"><i class="fas fa-times"></i></button>
+        `;
+        
+        const checkbox = note.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', () => toggleTodo(id, checkbox.checked));
+        todosGrid.appendChild(note);  // Changed from notesGrid to todosGrid
+    } else {
+        note.innerHTML = `
+            <span>${text}</span>
+            <button class="delete-note"><i class="fas fa-times"></i></button>
+        `;
+        notesGrid.appendChild(note);  // This remains the same
+    }
+    
+    note.querySelector('.delete-note').addEventListener('click', () => deleteNote(id, type));
+    
+    // Save to localStorage
+    saveNotes(type);
+}
+
+function toggleTodo(id, completed) {
+    const todos = JSON.parse(localStorage.getItem('todos')) || [];
+    const todoIndex = todos.findIndex(todo => todo.id === id);
+    if (todoIndex !== -1) {
+        todos[todoIndex].completed = completed;
+        localStorage.setItem('todos', JSON.stringify(todos));
+        
+        const todoElement = document.querySelector(`.sticky-note[data-id="${id}"] span`);
+        todoElement.style.textDecoration = completed ? 'line-through' : 'none';
+    }
+}
+
+function deleteNote(id, type) {
+    const storageKey = type === 'todo' ? 'todos' : 'notes';
+    const items = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const updatedItems = items.filter(item => item.id !== id);
+    localStorage.setItem(storageKey, JSON.stringify(updatedItems));
+    
+    const noteElement = document.querySelector(`.sticky-note[data-id="${id}"]`);
+    noteElement.remove();
+}
+
+function saveNotes(type) {
+    const notes = Array.from(document.querySelectorAll(`.sticky-note.${type}`)).map(note => ({
+        id: parseInt(note.dataset.id),
+        text: note.querySelector('span').textContent,
+        completed: type === 'todo' ? note.querySelector('input[type="checkbox"]').checked : undefined
+    }));
+    
+    localStorage.setItem(type === 'todo' ? 'todos' : 'notes', JSON.stringify(notes));
+}
+
+// Event Listeners
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey) {
+        switch (e.key.toLowerCase()) {
+            // ... existing shortcuts ...
+            case 'g':
+                e.preventDefault();
+                showModal('general');
+                break;
+            case 's':
+                e.preventDefault();
+                showModal('social');
+                break;
+            case 'd':
+                e.preventDefault();
+                showModal('dev');
+                break;
+            case 'i': // New shortcut for GIF
+                e.preventDefault();
+                showGifModal();
+                break;
+        }
+    }
+});
+
+modalBackdrop.addEventListener('click', hideModal);
+
+linkEditForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('link-name').value;
+    const url = document.getElementById('link-url').value;
+    const icon = document.getElementById('link-icon').value;
+    
+    folderLinks[currentFolder].push({ name, url, icon });
+    localStorage.setItem('folderLinks', JSON.stringify(folderLinks));
+    
+    renderFolder(currentFolder);
+    hideModal();
+});
+
+notesInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.target.value.trim()) {
+        createStickyNote('note', e.target.value.trim());
+        e.target.value = '';
+    }
+});
+
+todoInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.target.value.trim()) {
+        createStickyNote('todo', e.target.value.trim());
+        e.target.value = '';
+    }
+});
+
+// Clock functionality
+function updateClock() {
+    const now = new Date();
+    const clockTime = document.querySelector('.clock-time');
+    const clockDate = document.querySelector('.clock-date');
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    clockTime.textContent = `${hours}:${minutes}`;
+    
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    clockDate.textContent = now.toLocaleDateString('en-US', options);
+}
+
+// Initialize
+loadSavedData();
+setInterval(updateClock, 1000);
+updateClock();
+
+// Search functionality
+// Search functionality
+searchInput.addEventListener('focus', () => {
+    linkFolders.classList.add('search-active');
+});
+
+searchInput.addEventListener('blur', (e) => {
+    // Only remove if not clicking on shortcuts
+    if (!e.relatedTarget?.closest('.search-shortcuts')) {
+        setTimeout(() => {
+            if (!document.activeElement.closest('.search-shortcuts')) {
+                linkFolders.classList.remove('search-active');
+            }
+        }, 200);
+    }
+});
+// Fix shortcut button clicks
+searchButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        let prefix = '';
+        if (button.classList.contains('youtube')) prefix = 'y: ';
+        if (button.classList.contains('reddit')) prefix = 'r: ';
+        if (button.classList.contains('github')) prefix = 'gh: ';
+        
+        searchInput.value = prefix;
+        searchInput.focus();
+    });
+});
+
+// Handle search input
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (!query) return;
+        
+        // Check for search shortcuts
+        const [prefix, ...searchTerms] = query.split(' ');
+        const searchTerm = searchTerms.join(' ');
+        
+        const searchEngines = {
+            'y:': `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`,
+            'r:': `https://www.reddit.com/search?q=${encodeURIComponent(searchTerm)}`,
+            'gh:': `https://github.com/search?q=${encodeURIComponent(searchTerm)}`
+        };
+        
+        if (prefix in searchEngines && searchTerm) {
+            window.location.href = searchEngines[prefix];
+        } else {
+            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        }
+    }
+});
+// GIF functionality
+function showGifModal() {
+    gifModal.style.display = 'block';
+    modalBackdrop.style.display = 'block';
+    document.getElementById('gif-url').focus();
+}
+
+function hideGifModal() {
+    gifModal.style.display = 'none';
+    modalBackdrop.style.display = 'none';
+    gifForm.reset();
+}
+
+function updateGif(url) {
+    const img = gifContainer.querySelector('img') || document.createElement('img');
+    img.src = url;
+    img.alt = 'Custom GIF';
+    if (!img.parentElement) gifContainer.appendChild(img);
+    localStorage.setItem('customGif', url);
+}
+
+// Load saved GIF
+const savedGif = localStorage.getItem('customGif');
+if (savedGif) {
+    updateGif(savedGif);
+}
+
+// GIF form submission
+gifForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const url = document.getElementById('gif-url').value;
+    updateGif(url);
+    hideGifModal();
+});
+
+// Right-click to remove GIF
+gifContainer.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const img = gifContainer.querySelector('img');
+    if (img) {
+        img.remove();
+        localStorage.removeItem('customGif');
+    }
+});
+
+document.querySelector('.keyboard-shortcuts').innerHTML = `
+    Press Ctrl + G/S/D to add links to folders | Ctrl + I to set GIF
+`;
+
+    </script>
+</body>
+</html>
